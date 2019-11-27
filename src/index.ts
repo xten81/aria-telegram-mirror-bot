@@ -17,7 +17,7 @@ const bot = new TelegramBot(constants.TOKEN, { polling: true });
 var websocketOpened = false;
 var statusInterval: NodeJS.Timeout;
 var dlManager = dlm.DlManager.getInstance();
-
+var hosts = ['https://api.telegram.org'];
 initAria2();
 
 bot.on("polling_error", msg => console.error(msg.message));
@@ -34,7 +34,8 @@ function setEventCallback(regexp: RegExp, regexpNoName: RegExp,
 
 setEventCallback(eventRegex.commandsRegex.start, eventRegex.commandsRegexNoName.start, (msg) => {
   if (msgTools.isAuthorized(msg) < 0) {
-    msgTools.sendUnauthorizedMessage(bot, msg);
+    // msgTools.sendUnauthorizedMessage(bot, msg);
+    msgTools.sendMessage(bot, msg, 'You are not authorized to use this bot here!', -1);
   } else {
     msgTools.sendMessage(bot, msg, 'You should know the commands already. Happy mirroring.', -1);
   }
@@ -92,7 +93,7 @@ setEventCallback(eventRegex.commandsRegex.mirrorStatus, eventRegex.commandsRegex
   if (msgTools.isAuthorized(msg) < 0) {
     msgTools.sendUnauthorizedMessage(bot, msg);
   } else {
-    sendStatusMessage(msg);
+    sendStatusMessage(msg , true);
   }
 });
 
@@ -283,6 +284,7 @@ function prepDownload(msg: TelegramBot.Message, match: string, isTar: boolean): 
       console.log(`gid: ${gid} download:${match}`);
       // Wait a second to give aria2 enough time to queue the download
       setTimeout(() => {
+        // dlManager.setStatusLock(msg, sendStatusMessage);
         dlManager.setStatusLock(msg, sendStatusMessage);
       }, 1000);
     }
@@ -429,7 +431,7 @@ function ariaOnDownloadStart(gid: string, retry: number): void {
 
     if (!statusInterval) {
       statusInterval = setInterval(updateAllStatus,
-        constants.STATUS_UPDATE_INTERVAL_MS ? constants.STATUS_UPDATE_INTERVAL_MS : 12000);
+        constants.STATUS_UPDATE_INTERVAL_MS ? constants.STATUS_UPDATE_INTERVAL_MS :12000);
     }
   } else if (retry <= 8) {
     // OnDownloadStart probably got called before prepDownload's startDownload callback. Fairly common. Retry.
@@ -554,7 +556,6 @@ function initAria2(): void {
   ariaTools.setOnDownloadError(ariaOnDownloadError);
 }
 
-
 function driveUploadCompleteCallback(err: string, gid: string, url: string, filePath: string, fileName: string, fileSize: number): void {
   var finalMessage;
   if (err) {
@@ -566,10 +567,16 @@ function driveUploadCompleteCallback(err: string, gid: string, url: string, file
     console.log(`${gid}: Uploaded `);
     if (fileSize) {
       var fileSizeStr = downloadUtils.formatSize(fileSize);
-      finalMessage = `<a href='${url}'>${fileName}</a> (${fileSizeStr})`;
+      if(url.indexOf("/folders/") > -1){
+        var rawurl = constants.INDEX_DOMAIN + fileName + "/";
+      }else{
+        var rawurl = constants.INDEX_DOMAIN + fileName ;
+      }
+      var indexurl = encodeURI(rawurl) ;
+      finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> (${fileSizeStr}) \n<b>Do not share the GDrive Link. \nYou can share this link</b>: <a href='${indexurl}'>${fileName}</a>`;
     } else {
-      finalMessage = `<a href='${url}'>${fileName}</a>`;
+      finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> \n<b>Do not share the GDrive Link. \nYou can share this link</b>: <a href='${indexurl}'>${fileName}</a>`;
     }
     cleanupDownload(gid, finalMessage, url);
+    }
   }
-}
