@@ -577,10 +577,7 @@ function driveUploadCompleteCallback(err: string, gid: string, url: string, file
       var indexurl = encodeURI(rawurl) ;
       finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> (${fileSizeStr}) \n<b>Do not share the GDrive Link. \nYou can share this link</b>: <a href='${indexurl}'>${fileName}</a>`;
     } else {
-      finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> \n<b>Do not share the GDrive Link. \nYou can share this link</b>: <a href='${indexurl}'>${fileName}</a>`;
-    }
-    if (constants.IS_TEAM_DRIVE && isFolder) {
-      finalMessage += '\n\n<i>Folders in Shared Drives can only be shared with members of the drive. Mirror as an archive if you need public links.</i>';
+      finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> \n<b>Index link</b>: <a href='${indexurl}'>${fileName}</a>`;
     }
     cleanupDownload(gid, finalMessage, url);
     }
