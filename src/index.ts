@@ -575,7 +575,7 @@ function driveUploadCompleteCallback(err: string, gid: string, url: string, file
         var rawurl = constants.INDEX_DOMAIN + fileName ;
       }
       var indexurl = encodeURI(rawurl) ;
-      finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> (${fileSizeStr}) \n<b>Do not share the GDrive Link. \nYou can share this link</b>: <a href='${indexurl}'>${fileName}</a>`;
+      finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> (${fileSizeStr}) \n<b>Index link</b>: <a href='${indexurl}'>${fileName}</a>`;
     } else {
       finalMessage = `<b>GDrive Link</b>: <a href='${url}'>${fileName}</a> \n<b>Index link</b>: <a href='${indexurl}'>${fileName}</a>`;
     }
